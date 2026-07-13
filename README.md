@@ -7,10 +7,13 @@ with a west exit lane, serving **16 apartments**) — rebuilt as a Next.js + Rea
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+npm run dev        # dev server (Turbopack) → http://localhost:3000
+npm run preview    # production build + serve → http://localhost:3000 (most stable)
 npm test           # engine unit tests (vitest)
-npm run build      # production build
 ```
+
+Requires Node ≥ 20. If the dev server ever serves an unstyled page after many
+hot reloads, stop it and `rm -rf .next`, then start again — or use `npm run preview`.
 
 ## What it does
 
