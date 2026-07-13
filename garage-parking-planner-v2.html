@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Garage Planner — 17,60 × 29,75 m · 16 appartements</title>
+<style>
+:root{
+  --chrome:#141F2C; --chrome2:#1D2C3D; --chrome3:#26374B;
+  --paper:#F6F7F4; --ink:#23446E; --ink2:#7288A8;
+  --amber:#F3A73B; --amber2:#C87F14;
+  --red:#D6483C; --green:#3E9B6E;
+  --txt:#EAF0F6; --txt2:#9FB0C2;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:var(--sans);background:var(--chrome)}
+button{font-family:var(--sans);border:0;background:none;color:inherit;cursor:pointer}
+input,select{font-family:var(--mono);font-size:13px}
+
+#hdr{position:fixed;top:0;left:0;right:0;z-index:30;background:var(--chrome);
+  border-bottom:2px solid var(--amber);display:flex;align-items:center;gap:10px;
+  padding:8px 12px;color:var(--txt)}
+#hdr .tb{display:flex;flex-direction:column;min-width:0}
+#hdr .t1{font-size:13px;font-weight:800;letter-spacing:.14em;white-space:nowrap}
+#hdr .t2{font-family:var(--mono);font-size:10px;color:var(--txt2);letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hdr .sp{flex:1}
+.chip{font-family:var(--mono);font-size:12px;background:var(--chrome2);border:1px solid var(--chrome3);
+  border-radius:999px;padding:4px 10px;white-space:nowrap}
+.chip.warn{border-color:var(--red);color:#FFB4AC;display:none}
+.hbtn{width:34px;height:34px;border-radius:8px;background:var(--chrome2);border:1px solid var(--chrome3);
+  color:var(--txt);font-size:15px;display:flex;align-items:center;justify-content:center;flex:none}
+#langBtn{font-family:var(--mono);font-size:11px;font-weight:700;width:auto;padding:0 9px}
+
+#wrap{position:fixed;inset:0;background:var(--paper)}
+#cv{position:absolute;inset:0;touch-action:none;display:block}
+
+#zoom{position:fixed;right:10px;bottom:86px;z-index:25;display:flex;flex-direction:column;gap:7px}
+#zoom button{width:40px;height:40px;border-radius:10px;background:var(--chrome);color:var(--txt);
+  border:1px solid var(--chrome3);font-size:17px;box-shadow:0 2px 8px rgba(10,18,28,.25)}
+#zoom button:active{background:var(--chrome3)}
+
+#dock{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--chrome);
+  border-top:1px solid var(--chrome3);display:flex;justify-content:space-around;align-items:stretch;
+  padding:7px 6px calc(7px + env(safe-area-inset-bottom))}
+.dbtn{flex:1;max-width:110px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  color:var(--txt2);font-size:10px;letter-spacing:.04em;padding:4px 2px;border-radius:10px}
+.dbtn .ic{font-size:19px;line-height:1}
+.dbtn.on{color:var(--amber);background:var(--chrome2)}
+.dbtn:active{background:var(--chrome2)}
+
+#pill{position:fixed;z-index:28;display:none;background:var(--chrome);border:1px solid var(--chrome3);
+  border-radius:12px;box-shadow:0 4px 16px rgba(10,18,28,.35);padding:5px;gap:4px;align-items:center}
+#pill button{width:36px;height:36px;border-radius:8px;color:var(--txt);font-size:15px}
+#pill button:active{background:var(--chrome3)}
+#pill .lbl{font-family:var(--mono);font-size:10px;color:var(--txt2);padding:0 5px;max-width:80px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+#panel{position:fixed;top:0;right:0;bottom:0;width:min(340px,90vw);z-index:40;background:var(--chrome);
+  color:var(--txt);transform:translateX(105%);transition:transform .22s ease;display:flex;flex-direction:column;
+  box-shadow:-6px 0 24px rgba(5,10,18,.45)}
+#panel.open{transform:none}
+#panel header{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;
+  border-bottom:1px solid var(--chrome3)}
+#panel header b{font-size:13px;letter-spacing:.1em}
+#pbody{overflow-y:auto;padding:10px 14px 30px;flex:1}
+.sec{margin-bottom:16px}
+.sec h4{font-size:10px;letter-spacing:.14em;color:var(--amber);margin-bottom:8px;font-weight:800}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0;font-size:13px}
+.row label{color:var(--txt);flex:1}
+.sw{position:relative;width:38px;height:22px;flex:none}
+.sw input{opacity:0;position:absolute;inset:0;z-index:2;width:100%;height:100%}
+.sw i{position:absolute;inset:0;background:var(--chrome3);border-radius:999px;transition:.15s}
+.sw i:before{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;
+  background:var(--txt2);transition:.15s}
+.sw input:checked+i{background:var(--amber2)}
+.sw input:checked+i:before{left:19px;background:#fff}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.fld{display:flex;flex-direction:column;gap:3px}
+.fld span{font-size:10px;color:var(--txt2);letter-spacing:.06em}
+.fld input,.fld select{background:var(--chrome2);border:1px solid var(--chrome3);color:var(--txt);
+  border-radius:7px;padding:7px 8px;width:100%}
+.pbtn{display:block;width:100%;text-align:center;background:var(--chrome2);border:1px solid var(--chrome3);
+  color:var(--txt);border-radius:9px;padding:10px;font-size:13px;margin-bottom:7px}
+.pbtn.acc{background:var(--amber);border-color:var(--amber);color:#1B1206;font-weight:700}
+.pbtn.dng{border-color:#7A3630;color:#FFB4AC}
+.note{font-size:12px;color:var(--txt2);line-height:1.45}
+.note b{color:var(--txt)}
+details{background:var(--chrome2);border:1px solid var(--chrome3);border-radius:9px;padding:9px 11px;margin-bottom:8px}
+summary{font-size:12px;font-weight:700;cursor:pointer;color:var(--txt)}
+details .note{margin-top:7px}
+#capTxt,#aptTxt{font-family:var(--mono);font-size:12px;line-height:1.55;color:var(--txt)}
+#selNone{font-size:12px;color:var(--txt2)}
+#scrim{position:fixed;inset:0;z-index:35;background:rgba(5,10,16,.45);display:none}
+#scrim.on{display:block}
+#aptChips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.aptc{font-family:var(--mono);font-size:11px;padding:6px 0;width:44px;text-align:center;
+  border-radius:8px;background:var(--chrome2);border:1px solid var(--chrome3);color:var(--txt2)}
+.aptc.on{background:#2E5E45;border-color:var(--green);color:#DFF5E9;font-weight:700}
+.aptc.tk{opacity:.45;text-decoration:line-through}
+
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:45;background:var(--chrome);color:var(--txt);
+  border-top:2px solid var(--amber);border-radius:16px 16px 0 0;transform:translateY(110%);
+  transition:transform .22s ease;padding:14px 14px calc(16px + env(safe-area-inset-bottom));
+  max-height:70vh;overflow-y:auto}
+#sheet.open{transform:none}
+#sheet h3{font-size:12px;letter-spacing:.12em;color:var(--amber);margin:4px 0 10px}
+.addgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.abtn{background:var(--chrome2);border:1px solid var(--chrome3);border-radius:10px;color:var(--txt);
+  padding:11px 10px;text-align:left;display:flex;flex-direction:column;gap:3px}
+.abtn b{font-size:13px}
+.abtn span{font-family:var(--mono);font-size:10px;color:var(--txt2)}
+.abtn:active{background:var(--chrome3)}
+</style>
+</head>
+<body>
+
+<header id="hdr">
+  <button class="hbtn" id="langBtn">FR</button>
+  <div class="tb">
+    <div class="t1" data-i="title">GARAGE PLANNER</div>
+    <div class="t2">17,60 × 29,75 m · 16 APPT · SORTIE OUEST</div>
+  </div>
+  <div class="sp"></div>
+  <div class="chip" id="capChip">🚗 0</div>
+  <div class="chip warn" id="warnChip">⚠ 0</div>
+  <button class="hbtn" id="panelBtn">☰</button>
+</header>
+
+<div id="wrap"><canvas id="cv"></canvas></div>
+
+<div id="zoom">
+  <button id="zin">+</button>
+  <button id="zfit">⛶</button>
+  <button id="zout">−</button>
+  <button id="undoB">↶</button>
+  <button id="redoB">↷</button>
+</div>
+
+<nav id="dock">
+  <button class="dbtn on" id="toolSel"><span class="ic">✥</span><span data-i="select">Sélection</span></button>
+  <button class="dbtn" id="toolAdd"><span class="ic">＋</span><span data-i="add">Ajouter</span></button>
+  <button class="dbtn" id="toolMeas"><span class="ic">📏</span><span data-i="measure">Mesurer</span></button>
+  <button class="dbtn" id="toolPng"><span class="ic">🖼</span><span data-i="png">Export PNG</span></button>
+</nav>
+
+<div id="pill">
+  <button id="pRotM">↺</button>
+  <button id="pRot90">90°</button>
+  <button id="pRotP">↻</button>
+  <button id="pApt">🏠</button>
+  <button id="pDup">⧉</button>
+  <button id="pDel">🗑</button>
+  <span class="lbl" id="pLbl"></span>
+</div>
+
+<div id="scrim"></div>
+
+<aside id="panel">
+  <header><b data-i="panel">PANNEAU</b><button class="hbtn" id="panelX">✕</button></header>
+  <div id="pbody">
+
+    <div class="sec" id="selSec">
+      <h4 data-i="selection">SÉLECTION</h4>
+      <div id="selNone" data-i="selnone">Touchez une place ou un objet sur le plan.</div>
+      <div id="selForm" style="display:none">
+        <div class="grid2">
+          <div class="fld"><span data-i="ptype">Gabarit</span>
+            <select id="fType"></select></div>
+          <div class="fld"><span>Rotation (°)</span><input id="fR" type="number" step="5"></div>
+          <div class="fld"><span>X (m)</span><input id="fX" type="number" step="0.05"></div>
+          <div class="fld"><span>Y (m)</span><input id="fY" type="number" step="0.05"></div>
+          <div class="fld"><span data-i="width">Largeur (m)</span><input id="fW" type="number" step="0.05"></div>
+          <div class="fld"><span data-i="length">Longueur (m)</span><input id="fL" type="number" step="0.05"></div>
+        </div>
+        <div class="row" id="flagRow"><label data-i="flag">Marquer « manœuvre délicate »</label>
+          <span class="sw"><input type="checkbox" id="fFlag"><i></i></span></div>
+        <div id="aptBox">
+          <div class="row" style="padding-bottom:0"><label data-i="aptassign">Appartements affectés à cette place</label></div>
+          <div id="aptChips"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h4 data-i="apts">APPARTEMENTS</h4>
+      <div class="grid2" style="align-items:end">
+        <div class="fld"><span data-i="naptl">Nombre d'appartements</span>
+          <input id="nApt" type="number" min="1" max="60" step="1" value="16"></div>
+        <button class="pbtn acc" id="autoApt" style="margin:0" data-i="autoapt">Répartir auto</button>
+      </div>
+      <div id="aptTxt" style="margin-top:9px"></div>
+    </div>
+
+    <div class="sec">
+      <h4 data-i="layers">AFFICHAGE</h4>
+      <div class="row"><label data-i="lgrid">Grille (1 m)</label><span class="sw"><input type="checkbox" id="oGrid" checked><i></i></span></div>
+      <div class="row"><label data-i="ldims">Cotes du relevé</label><span class="sw"><input type="checkbox" id="oDims" checked><i></i></span></div>
+      <div class="row"><label data-i="lsdims">Cotes des places</label><span class="sw"><input type="checkbox" id="oSDims" checked><i></i></span></div>
+      <div class="row"><label data-i="lflow">Sens de circulation</label><span class="sw"><input type="checkbox" id="oFlow" checked><i></i></span></div>
+      <div class="row"><label data-i="lsafe">Sécurité (extincteurs, miroirs, piéton)</label><span class="sw"><input type="checkbox" id="oSafe" checked><i></i></span></div>
+      <div class="row"><label data-i="lclear">Dégagements ±25 cm</label><span class="sw"><input type="checkbox" id="oClear"><i></i></span></div>
+      <div class="row"><label data-i="lsnap">Aimanter (5 cm)</label><span class="sw"><input type="checkbox" id="oSnap" checked><i></i></span></div>
+      <div class="row"><label data-i="lstruct">Modifier la structure (murs, poteaux…)</label><span class="sw"><input type="checkbox" id="oStruct"><i></i></span></div>
+    </div>
+
+    <div class="sec">
+      <h4 data-i="presets">SCÉNARIOS</h4>
+      <button class="pbtn acc" id="presetOpt" data-i="popt">Optimal — 13 voitures</button>
+      <button class="pbtn" id="presetSafe" data-i="psafe">Confort — 11 voitures</button>
+      <button class="pbtn dng" id="presetClear" data-i="pclear">Vider les places</button>
+    </div>
+
+    <div class="sec">
+      <h4 data-i="capacity">CAPACITÉ</h4>
+      <div id="capTxt"></div>
+    </div>
+
+    <div class="sec">
+      <h4>EXPORT</h4>
+      <button class="pbtn" id="expPng" data-i="epng">Plan PNG + tableau de traçage</button>
+      <button class="pbtn" id="expJson" data-i="ejson">Sauvegarder (fichier JSON)</button>
+      <button class="pbtn" id="impJson" data-i="ijson">Importer un fichier JSON</button>
+      <input type="file" id="fileIn" accept=".json" style="display:none">
+    </div>
+
+    <div class="sec">
+      <h4 data-i="rules">RÈGLES &amp; NOTES</h4>
+      <details><summary data-i="r1t">Gabarits &amp; allées</summary><div class="note" data-i="r1"></div></details>
+      <details><summary data-i="r2t">Circulation &amp; sécurité</summary><div class="note" data-i="r2"></div></details>
+      <details open><summary data-i="r3t">Hypothèses à vérifier sur site</summary><div class="note" data-i="r3"></div></details>
+    </div>
+  </div>
+</aside>
+
+<div id="sheet">
+  <h3 data-i="addstall">AJOUTER UNE PLACE</h3>
+  <div class="addgrid" id="stallBtns"></div>
+  <h3 data-i="addobs">AJOUTER UN OBSTACLE / ZONE</h3>
+  <div class="addgrid" id="obsBtns"></div>
+</div>
+
+<script>
+"use strict";
+/* =====================================================================
+   GARAGE PLANNER v2 — 17,60 × 29,75 m — sortie mur OUEST (4,47 m)
+   Géométrie corrigée d'après le tracé du client + croquis + vidéos.
+   16 appartements — places partageables (premier arrivé, premier servi).
+   ===================================================================== */
+
+let LANG = "en";
+const T = {
+ fr:{title:"GARAGE PLANNER",select:"Sélection",add:"Ajouter",measure:"Mesurer",png:"Export PNG",
+  panel:"PANNEAU",selection:"SÉLECTION",selnone:"Touchez une place ou un objet sur le plan.",
+  ptype:"Gabarit",width:"Largeur (m)",length:"Longueur (m)",flag:"Marquer « manœuvre délicate »",
+  aptassign:"Appartements affectés à cette place",
+  apts:"APPARTEMENTS",naptl:"Nombre d'appartements",autoapt:"Répartir auto",
+  layers:"AFFICHAGE",lgrid:"Grille (1 m)",ldims:"Cotes du relevé",lsdims:"Cotes des places",
+  lflow:"Sens de circulation",lsafe:"Sécurité (extincteurs, miroirs, piéton)",
+  lclear:"Dégagements ±25 cm",lsnap:"Aimanter (5 cm)",lstruct:"Modifier la structure (murs, poteaux…)",
+  presets:"SCÉNARIOS",popt:"Optimal — 13 voitures",psafe:"Confort — 11 voitures",pclear:"Vider les places",
+  capacity:"CAPACITÉ",epng:"Plan PNG + tableau de traçage",ejson:"Sauvegarder (fichier JSON)",ijson:"Importer un fichier JSON",
+  rules:"RÈGLES & NOTES",r1t:"Gabarits & allées",r2t:"Circulation & sécurité",r3t:"Hypothèses à vérifier sur site",
+  r1:"<b>Compacte</b> 2,20×4,30 · <b>Standard</b> 2,50×5,00 · <b>SUV</b> 2,80×5,40 · <b>XL</b> 3,15×5,95 · <b>PMR</b> 3,50×5,00.<br>Allée sens unique ≥ <b>3,00 m</b> · double sens ≥ <b>5,00 m</b> · face à des places 90° : <b>5,00–5,50 m</b> (une baie plus large compense une allée plus étroite).<br>+30 cm de largeur contre un mur ou un poteau.",
+  r2:"Sortie unique par le <b>mur OUEST</b> (ouverture 4,47 m) via la voie haute — <b>toujours libre</b>.<br>Boucle recommandée (anti-horaire) : passage entre poteaux (4,33 m) → allée ouest ↓ → allée sud → allée est ↑ → couloir haut ← → voie de sortie.<br>Places 1–2 et 3–4 : <b>en marche arrière</b> de préférence. Butées de roues aux places en épi, <b>2 miroirs convexes</b> (sortie + passage), <b>2 extincteurs</b>, marquage piéton, hauteur libre ≥ 2,20 m sous poutres.",
+  r3:"• Profondeur totale <b>29,75 m</b> reprise de votre tracé (le croquis notait 25,13 m depuis le mur intérieur).<br>• Ligne des poteaux bas supposée au nu des têtes de places (Y ≈ 23,19 m) — vérifier.<br>• Le local en L (aile 1,52 × 3,15) est fermé ; le décroché 1,60 × 1,68 est ouvert.<br>• La bande droite du haut est ouverte (pas de mur après le 2ᵉ poteau) — les places 3–4 s'y appuient sur le mur nord.<br>• Tout se corrige : activez « Modifier la structure » et déplacez murs / poteaux.",
+  addstall:"AJOUTER UNE PLACE",addobs:"AJOUTER UN OBSTACLE / ZONE",
+  small:"Compacte",std:"Standard",suv:"SUV",xl:"XL / Pickup",pmr:"PMR",moto:"Moto",
+  col:"Poteau 51 cm",wallb:"Mur / local",noz:"Zone interdite",
+  stall:"Place",coreL:"CAGE ESCALIER",wingL:"LOCAL",doorL:"P",ped:"piétons",
+  laneL:"VOIE DE SORTIE — NE PAS STATIONNER",exitL:"SORTIE",oneway:"SENS UNIQUE",twoway:"double sens",
+  wWall:"hors murs",wOver:"chevauchement",wLane:"sur la voie de sortie",wDoor:"bloque une porte",
+  confirmClear:"Supprimer toutes les places ?",
+  planTitle:"PLAN DE STATIONNEMENT — GARAGE RÉSIDENTIEL (16 APPT)",
+  planSub:"Niveau garage · 17,60 × 29,75 m · sortie ouest 4,47 m",
+  thN:"N°",thT:"Gabarit",thD:"L × P (m)",thX:"X (m)",thY:"Y (m)",thA:"Appartements",
+  tblNote:"X = distance depuis le mur OUEST · Y = depuis le mur NORD (coin haut-gauche de la place)",
+  unass:"Sans place",shared:"partagée",aptShort:"Appt",
+  cap:(n,f,cls,sh)=>`Places voiture : <b>${n}</b> (${f} manœuvre délicate)\n${cls}\nPlaces partagées : <b>${sh}</b>`},
+ en:{title:"GARAGE PLANNER",select:"Select",add:"Add",measure:"Measure",png:"Export PNG",
+  panel:"PANEL",selection:"SELECTION",selnone:"Tap a stall or object on the plan.",
+  ptype:"Template",width:"Width (m)",length:"Length (m)",flag:"Mark as “tight manoeuvre”",
+  aptassign:"Apartments assigned to this stall",
+  apts:"APARTMENTS",naptl:"Number of apartments",autoapt:"Auto-distribute",
+  layers:"DISPLAY",lgrid:"Grid (1 m)",ldims:"Survey dimensions",lsdims:"Stall dimensions",
+  lflow:"Traffic flow",lsafe:"Safety (extinguishers, mirrors, walkway)",
+  lclear:"Clearances ±25 cm",lsnap:"Snap (5 cm)",lstruct:"Edit structure (walls, columns…)",
+  presets:"SCENARIOS",popt:"Optimum — 13 cars",psafe:"Comfort — 11 cars",pclear:"Clear all stalls",
+  capacity:"CAPACITY",epng:"PNG plan + marking table",ejson:"Save (JSON file)",ijson:"Import a JSON file",
+  rules:"RULES & NOTES",r1t:"Templates & aisles",r2t:"Circulation & safety",r3t:"Assumptions to verify on site",
+  r1:"<b>Compact</b> 2.20×4.30 · <b>Standard</b> 2.50×5.00 · <b>SUV</b> 2.80×5.40 · <b>XL</b> 3.15×5.95 · <b>Accessible</b> 3.50×5.00.<br>One-way aisle ≥ <b>3.00 m</b> · two-way ≥ <b>5.00 m</b> · facing 90° stalls: <b>5.00–5.50 m</b> (a wider bay compensates a narrower aisle).<br>+30 cm width against a wall or column.",
+  r2:"Single access through the <b>WEST wall</b> (4.47 m opening) via the top lane — <b>always kept clear</b>.<br>Recommended loop (counter-clockwise): column gap (4.33 m) → west aisle ↓ → south aisle → east aisle ↑ → top corridor ← → exit lane.<br>Stalls 1–2 and 3–4: <b>reverse-in</b> preferred. Wheel stops at nose-in stalls, <b>2 convex mirrors</b> (exit + gap), <b>2 extinguishers</b>, pedestrian markings, clear height ≥ 2.20 m under beams.",
+  r3:"• Total depth <b>29.75 m</b> taken from your trace (the sketch noted 25.13 m from the interior wall).<br>• Bottom column line assumed flush with stall heads (Y ≈ 23.19 m) — verify.<br>• The L-shaped room (wing 1.52 × 3.15) is enclosed; the 1.60 × 1.68 notch is open floor.<br>• The top-right area is open (no wall after the 2nd column) — stalls 3–4 lean on the north wall.<br>• Everything is fixable: enable “Edit structure” and drag walls / columns.",
+  addstall:"ADD A STALL",addobs:"ADD AN OBSTACLE / ZONE",
+  small:"Compact",std:"Standard",suv:"SUV",xl:"XL / Pickup",pmr:"Accessible",moto:"Motorbike",
+  col:"Column 51 cm",wallb:"Wall / room",noz:"No-parking zone",
+  stall:"Stall",coreL:"STAIR CORE",wingL:"ROOM",doorL:"P",ped:"pedestrians",
+  laneL:"EXIT LANE — NO PARKING",exitL:"EXIT",oneway:"ONE WAY",twoway:"two-way",
+  wWall:"outside walls",wOver:"overlap",wLane:"on the exit lane",wDoor:"blocks a door",
+  confirmClear:"Delete all stalls?",
+  planTitle:"PARKING LAYOUT — RESIDENTIAL GARAGE (16 APTS)",
+  planSub:"Garage level · 17.60 × 29.75 m · west exit 4.47 m",
+  thN:"No.",thT:"Template",thD:"W × L (m)",thX:"X (m)",thY:"Y (m)",thA:"Apartments",
+  tblNote:"X = distance from WEST wall · Y = from NORTH wall (top-left corner of the stall)",
+  unass:"No stall",shared:"shared",aptShort:"Apt",
+  cap:(n,f,cls,sh)=>`Car stalls: <b>${n}</b> (${f} tight manoeuvre)\n${cls}\nShared stalls: <b>${sh}</b>`}
+};
+const t = k => T[LANG][k];
+
+/* ---------------- Geometry (meters, origin = interior top-left) ---------------- */
+const GW = 17.60, GH = 29.75;
+const EXIT = {y0:0, y1:4.47};                       // opening in the WEST wall
+const LANE = {x:0, y:0, w:12.03, h:4.47};           // exit lane — keep clear
+function defaultStructure(){
+  return [
+    {id:"tw",   type:"wall", x:0,     y:4.47,  w:6.68, h:0.28},
+    {id:"coreA",type:"core", x:7.60,  y:9.12,  w:3.43, h:7.75},
+    {id:"coreB",type:"core", x:7.60,  y:16.87, w:1.83, h:1.68},
+    {id:"wing", type:"wall", x:6.08,  y:15.40, w:1.52, h:3.15, lab:"wingL"},
+    {id:"cT1",  type:"col",  x:6.68,  y:4.47,  w:0.51, h:0.51},
+    {id:"cT2",  type:"col",  x:11.52, y:4.47,  w:0.51, h:0.51},
+    {id:"c1",   type:"col",  x:6.30,  y:23.19, w:0.51, h:0.51},
+    {id:"c2",   type:"col",  x:9.61,  y:23.19, w:0.51, h:0.51},
+    {id:"c3",   type:"col",  x:13.69, y:23.19, w:0.51, h:0.51},
+    {id:"d1",   type:"door", x:6.40,  y:10.55, w:1.20, h:1.10},
+    {id:"d2",   type:"door", x:6.52,  y:14.25, w:0.95, h:1.10}
+  ];
+}
+const TYPES = {
+  small:{w:2.20,l:4.30,kind:"perp"}, std:{w:2.50,l:5.00,kind:"perp"},
+  suv:{w:2.80,l:5.40,kind:"perp"},  xl:{w:3.15,l:5.95,kind:"perp"},
+  pmr:{w:3.50,l:5.00,kind:"perp"},  moto:{w:1.20,l:2.50,kind:"perp"},
+  col:{w:0.51,l:0.51,type:"col"}, wallb:{w:2.00,l:1.00,type:"wall"}, noz:{w:3.00,l:3.00,type:"nozone"}
+};
+function uid(){return "o"+Math.random().toString(36).slice(2,9)}
+function stall(cx,cy,w,l,rot,tp,kind,flag){return {id:uid(),cx,cy,w,l,rot,tp,kind,flag:!!flag,apts:[]}}
+/* Optimal 13-car layout (multi-size). rot 0 = nose north, 180 = nose south */
+function presetOpt(){
+  return [
+    stall(1.65, 7.15, 2.50,4.80,  0,"std","perp"),        // 1  N-W pair (reverse-in)
+    stall(4.35, 7.15, 2.50,4.80,  0,"std","perp"),        // 2
+    stall(13.80,2.70, 2.50,4.80,  0,"std","perp"),        // 3  N-E pair on north wall
+    stall(16.40,2.70, 2.30,4.80,  0,"std","perp"),        // 4
+    stall(16.45,8.80, 2.20,5.60,  0,"std","para"),        // 5  east wall parallel
+    stall(16.45,14.80,2.20,5.60,  0,"std","para"),        // 6
+    stall(1.15,12.65, 2.20,5.50,  0,"std","para"),        // 7  west wall parallel
+    stall(1.12,18.15, 2.15,4.50,  0,"small","para",1),    // 8  compact — flagged
+    stall(1.675,26.675,2.95,5.95,180,"xl","perp"),        // 9  south bay 6.30 (×2)
+    stall(4.725,26.675,2.75,5.95,180,"suv","perp"),       // 10
+    stall(8.21, 26.675,2.60,5.95,180,"std","perp",1),     // 11 south bay 2.80 — flagged
+    stall(11.905,26.675,3.15,5.95,180,"xl","perp"),       // 12 south bay 3.57
+    stall(15.90,26.675,3.00,5.95,180,"suv","perp")        // 13 south bay 3.32
+  ];
+}
+function presetSafe(){ return presetOpt().filter(s=>!s.flag); }
+
+/* ---------------- State ---------------- */
+let state = { stalls: presetOpt(), structure: defaultStructure(), napt:16 };
+let sel=null, tool="sel", measure=null;
+let opts = {grid:1,dims:1,sdims:1,flow:1,safe:1,clear:0,snap:1,struct:0};
+let undoStack=[], redoStack=[];
+const dpr = Math.min(window.devicePixelRatio||1, 3);
+let vw = {S:24, ox:20, oy:70};
+
+const cv=document.getElementById("cv"), ctx=cv.getContext("2d");
+function sizeCanvas(){
+  const r=cv.parentElement.getBoundingClientRect();
+  cv.width=r.width*dpr; cv.height=r.height*dpr;
+  cv.style.width=r.width+"px"; cv.style.height=r.height+"px"; draw();
+}
+function fit(){
+  const r=cv.getBoundingClientRect(), topPad=66, botPad=78, side=26;
+  const S=Math.min((r.width-side*2)/GW,(r.height-topPad-botPad)/GH);
+  vw.S=S; vw.ox=(r.width-GW*S)/2; vw.oy=topPad+(r.height-topPad-botPad-GH*S)/2; draw();
+}
+window.addEventListener("resize",()=>{sizeCanvas();fit();});
+
+/* ---------------- Math ---------------- */
+const rad=d=>d*Math.PI/180;
+function cornersOf(o){
+  const a=rad(o.rot||0);
+  const ax={x:Math.sin(a),y:-Math.cos(a)}, sd={x:Math.cos(a),y:Math.sin(a)};
+  const hw=o.w/2, hl=o.l/2, cx=o.cx, cy=o.cy;
+  return [
+    {x:cx+ax.x*hl+sd.x*hw,y:cy+ax.y*hl+sd.y*hw},
+    {x:cx+ax.x*hl-sd.x*hw,y:cy+ax.y*hl-sd.y*hw},
+    {x:cx-ax.x*hl-sd.x*hw,y:cy-ax.y*hl-sd.y*hw},
+    {x:cx-ax.x*hl+sd.x*hw,y:cy-ax.y*hl+sd.y*hw}
+  ];
+}
+function toOBB(r){return {cx:r.x+r.w/2,cy:r.y+r.h/2,w:r.w,l:r.h,rot:0}}
+function project(cs,u){let mn=1e9,mx=-1e9;for(const p of cs){const d=p.x*u.x+p.y*u.y;if(d<mn)mn=d;if(d>mx)mx=d}return [mn,mx]}
+function obbOverlap(A,B){
+  const ca=cornersOf(A),cb=cornersOf(B),EPS=0.015,axes=[];
+  for(const cs of [ca,cb]) for(let i=0;i<2;i++){
+    const e={x:cs[(i+1)%4].x-cs[i].x,y:cs[(i+1)%4].y-cs[i].y};
+    const L=Math.hypot(e.x,e.y)||1; axes.push({x:-e.y/L,y:e.x/L});
+  }
+  for(const u of axes){const [a1,a2]=project(ca,u),[b1,b2]=project(cb,u);
+    if(a2<b1+EPS||b2<a1+EPS)return false}
+  return true;
+}
+function pointInOBB(p,o){
+  const a=rad(o.rot||0),dx=p.x-o.cx,dy=p.y-o.cy;
+  const lx=dx*Math.cos(-a)-dy*Math.sin(-a), ly=dx*Math.sin(-a)+dy*Math.cos(-a);
+  return Math.abs(lx)<=o.w/2&&Math.abs(ly)<=o.l/2;
+}
+const snapV=v=>opts.snap?Math.round(v/0.05)*0.05:v;
+
+/* ---------------- Warnings ---------------- */
+function computeWarnings(){
+  const hard=state.structure.filter(s=>["core","wall","col","nozone"].includes(s.type)).map(toOBB);
+  const doors=state.structure.filter(s=>s.type==="door").map(toOBB);
+  const laneO=toOBB(LANE);
+  for(const s of state.stalls){
+    s.warn=[];
+    for(const c of cornersOf(s))
+      if(c.x<-0.02||c.y<-0.02||c.x>GW+0.02||c.y>GH+0.02){s.warn.push("wWall");break}
+    for(const h of hard) if(obbOverlap(s,h)){s.warn.push("wOver");break}
+    for(const o of state.stalls) if(o!==s&&obbOverlap(s,o)){s.warn.push("wOver");break}
+    if(obbOverlap(s,laneO)) s.warn.push("wLane");
+    for(const d of doors) if(obbOverlap(s,d)){s.warn.push("wDoor");break}
+    s.warn=[...new Set(s.warn)];
+  }
+}
+
+/* ---------------- Drawing ---------------- */
+const INK="#23446E", INK2="#7288A8", MONO="ui-monospace,Menlo,Consolas,monospace";
+function hatch(c,x,y,w,h,S,gap,color){
+  c.save();c.beginPath();c.rect(x,y,w,h);c.clip();
+  c.strokeStyle=color;c.lineWidth=1;const g=gap*S;
+  for(let d=-h;d<w+h;d+=g){c.beginPath();c.moveTo(x+d,y+h);c.lineTo(x+d+h,y);c.stroke();}
+  c.restore();
+}
+function arrow(c,x1,y1,x2,y2,hw){
+  c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();
+  const a=Math.atan2(y2-y1,x2-x1);
+  c.beginPath();c.moveTo(x2,y2);
+  c.lineTo(x2-hw*Math.cos(a-0.42),y2-hw*Math.sin(a-0.42));
+  c.lineTo(x2-hw*Math.cos(a+0.42),y2-hw*Math.sin(a+0.42));
+  c.closePath();c.fill();
+}
+function dim(c,v,x1,y1,x2,y2,off,S){
+  const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy)||1;
+  const nx=-dy/L*off*S, ny=dx/L*off*S;
+  const ax1=x1+nx,ay1=y1+ny,ax2=x2+nx,ay2=y2+ny;
+  c.strokeStyle=INK2;c.fillStyle=INK2;c.lineWidth=1;
+  c.beginPath();c.moveTo(x1,y1);c.lineTo(ax1,ay1);c.moveTo(x2,y2);c.lineTo(ax2,ay2);c.stroke();
+  arrow(c,(ax1+ax2)/2,(ay1+ay2)/2,ax1,ay1,6);arrow(c,(ax1+ax2)/2,(ay1+ay2)/2,ax2,ay2,6);
+  c.beginPath();c.moveTo(ax1,ay1);c.lineTo(ax2,ay2);c.stroke();
+  const fs=Math.max(9,Math.min(13,0.3*S));
+  c.font=`${fs}px ${MONO}`;
+  c.save();c.translate((ax1+ax2)/2,(ay1+ay2)/2);
+  let ang=Math.atan2(ay2-ay1,ax2-ax1);if(ang>Math.PI/2||ang<-Math.PI/2)ang+=Math.PI;
+  c.rotate(ang);c.textAlign="center";c.textBaseline="bottom";c.fillText(v,0,-3);c.restore();
+}
+function label(c,txt,x,y,fs,color,bold,angle){
+  c.save();c.translate(x,y);if(angle)c.rotate(angle);
+  c.font=`${bold?"700 ":""}${fs}px ${MONO}`;
+  c.fillStyle=color;c.textAlign="center";c.textBaseline="middle";
+  c.fillText(txt,0,0);c.restore();
+}
+
+function drawScene(c,v,printMode){
+  const S=v.S, X=x=>v.ox+x*S, Y=y=>v.oy+y*S;
+  c.fillStyle="#F6F7F4";c.fillRect(X(-3),Y(-3),(GW+6)*S,(GH+6)*S);
+  if(opts.grid||printMode){
+    c.lineWidth=1;
+    for(let i=0;i<=GW;i+=1){c.strokeStyle=i%5?"#E7ECE6":"#D5DDD4";
+      c.beginPath();c.moveTo(X(i),Y(0));c.lineTo(X(i),Y(GH));c.stroke();}
+    for(let j=0;j<=GH;j+=1){c.strokeStyle=j%5?"#E7ECE6":"#D5DDD4";
+      c.beginPath();c.moveTo(X(0),Y(j));c.lineTo(X(GW),Y(j));c.stroke();}
+  }
+  /* exit lane (keep clear) */
+  hatch(c,X(LANE.x),Y(LANE.y),LANE.w*S,LANE.h*S,S,0.6,"#C4CFDE");
+  c.setLineDash([6,5]);c.strokeStyle="#8FA2BC";c.lineWidth=1.2;
+  c.strokeRect(X(LANE.x)+1,Y(LANE.y)+1,LANE.w*S-2,LANE.h*S-2);c.setLineDash([]);
+  label(c,t("laneL"),X(6.0),Y(3.95),Math.max(8,0.26*S),"#5A749B",0);
+  /* exit arrow */
+  c.strokeStyle=INK;c.fillStyle=INK;c.lineWidth=Math.max(2.5,0.09*S);
+  arrow(c,X(5.4),Y(2.0),X(0.7),Y(2.0),Math.max(10,0.38*S));
+  label(c,"← "+t("exitL"),X(3.3),Y(1.15),Math.max(11,0.44*S),INK,1);
+  /* outer walls */
+  c.strokeStyle=INK;c.lineWidth=Math.max(2.5,0.10*S);
+  c.strokeRect(X(0),Y(0),GW*S,GH*S);
+  /* west wall opening */
+  c.strokeStyle="#F6F7F4";c.lineWidth=Math.max(2.5,0.10*S)+3;
+  c.beginPath();c.moveTo(X(0),Y(EXIT.y0+0.12));c.lineTo(X(0),Y(EXIT.y1-0.06));c.stroke();
+  c.strokeStyle="#F3A73B";c.lineWidth=Math.max(3,0.12*S);c.setLineDash([S*0.35,S*0.22]);
+  c.beginPath();c.moveTo(X(0),Y(EXIT.y0+0.12));c.lineTo(X(0),Y(EXIT.y1-0.06));c.stroke();
+  c.setLineDash([]);
+  label(c,"4,47",X(0.45),Y(2.25),Math.max(9,0.3*S),"#C87F14",1,-Math.PI/2);
+  /* structure */
+  for(const st of state.structure){
+    const x=X(st.x),y=Y(st.y),w=st.w*S,h=st.h*S;
+    if(st.type==="core"){
+      c.fillStyle="#E3E9F2";c.fillRect(x,y,w,h);
+      hatch(c,x,y,w,h,S,0.8,"#C4CFDE");
+      c.strokeStyle=INK;c.lineWidth=Math.max(2,0.08*S);c.strokeRect(x,y,w,h);
+      if(st.id==="coreA")
+        label(c,t("coreL"),X(st.x+st.w/2),Y(st.y+st.h/2),Math.max(8,0.26*S),INK,1,-Math.PI/2);
+    } else if(st.type==="wall"){
+      c.fillStyle="#D9E0EA";c.fillRect(x,y,w,h);
+      c.strokeStyle=INK;c.lineWidth=Math.max(1.5,0.05*S);c.strokeRect(x,y,w,h);
+      if(st.lab)label(c,t(st.lab),X(st.x+st.w/2),Y(st.y+st.h/2),Math.max(7,0.2*S),"#43608C",0,st.h>st.w?-Math.PI/2:0);
+    } else if(st.type==="col"){
+      c.fillStyle=INK;c.fillRect(x,y,w,h);
+    } else if(st.type==="door"){
+      c.strokeStyle="#3E9B6E";c.lineWidth=1.4;c.setLineDash([4,3]);
+      c.strokeRect(x,y,w,h);c.setLineDash([]);
+      label(c,t("doorL"),X(st.x+st.w/2),Y(st.y+st.h/2),Math.max(9,0.3*S),"#2F7D57",1);
+    } else if(st.type==="nozone"){
+      hatch(c,x,y,w,h,S,0.5,"#D98A83");
+      c.strokeStyle="#C05248";c.lineWidth=1.5;c.setLineDash([6,4]);
+      c.strokeRect(x,y,w,h);c.setLineDash([]);
+    }
+    if(opts.struct&&sel&&sel.obj===st){
+      c.strokeStyle="#F3A73B";c.lineWidth=2;c.setLineDash([5,4]);
+      c.strokeRect(x-3,y-3,w+6,h+6);c.setLineDash([]);
+    }
+  }
+  /* flow */
+  if(opts.flow){
+    c.strokeStyle="rgba(35,68,110,.5)";c.fillStyle="rgba(35,68,110,.5)";
+    c.lineWidth=Math.max(2,0.08*S);c.setLineDash([S*0.5,S*0.35]);
+    const hw=Math.max(9,0.33*S);
+    arrow(c,X(8.7),Y(3.4),X(8.7),Y(6.2),hw);       /* in through gap */
+    arrow(c,X(10.3),Y(6.2),X(10.3),Y(3.4),hw);     /* out through gap */
+    arrow(c,X(4.0),Y(10.4),X(4.0),Y(17.4),hw);     /* west aisle ↓ */
+    arrow(c,X(3.4),Y(21.0),X(12.6),Y(21.0),hw);    /* south aisle → */
+    arrow(c,X(13.4),Y(19.2),X(13.4),Y(7.6),hw);    /* east aisle ↑ */
+    arrow(c,X(12.6),Y(6.9),X(11.0),Y(6.9),hw);     /* top corridor ← */
+    c.setLineDash([]);
+    label(c,t("oneway"),X(4.0),Y(13.7),Math.max(8,0.26*S),"rgba(35,68,110,.6)",1,-Math.PI/2);
+  }
+  /* safety */
+  if(opts.safe){
+    const ext=(ex,ey)=>{c.fillStyle="#D6483C";
+      c.beginPath();c.arc(X(ex),Y(ey),Math.max(5,0.16*S),0,7);c.fill();
+      label(c,"EXT",X(ex),Y(ey),Math.max(6,0.14*S),"#fff",1);};
+    ext(7.15,10.1); ext(1.0,5.3);
+    const mir=(mx,my)=>{c.strokeStyle="#F3A73B";c.lineWidth=2;
+      c.beginPath();c.arc(X(mx),Y(my),Math.max(6,0.2*S),0,7);c.stroke();
+      label(c,"M",X(mx),Y(my),Math.max(7,0.18*S),"#C87F14",1);};
+    mir(0.55,4.75); mir(11.85,5.1);
+    c.strokeStyle="#3E9B6E";c.lineWidth=1.4;c.setLineDash([2,4]);
+    c.beginPath();c.moveTo(X(6.40),Y(11.1));c.lineTo(X(3.0),Y(11.1));
+    c.lineTo(X(3.0),Y(2.2));c.lineTo(X(0.4),Y(2.2));c.stroke();c.setLineDash([]);
+    label(c,t("ped"),X(3.35),Y(8.3),Math.max(7,0.2*S),"#2F7D57",0,-Math.PI/2);
+  }
+  /* stalls */
+  const cars=state.stalls.slice().sort((a,b)=>a.cy-b.cy||a.cx-b.cx);
+  const numOf=new Map(); cars.forEach((s,i)=>numOf.set(s.id,String(i+1)));
+  for(const s of state.stalls){
+    const bad=s.warn&&s.warn.length;
+    c.save();
+    c.translate(X(s.cx),Y(s.cy));c.rotate(rad(s.rot||0));
+    const hw=s.w/2*S,hl=s.l/2*S;
+    if(opts.clear){c.setLineDash([4,4]);c.strokeStyle="rgba(243,167,59,.65)";c.lineWidth=1;
+      c.strokeRect(-hw-0.25*S,-hl-0.25*S,(s.w+0.5)*S,(s.l+0.5)*S);c.setLineDash([]);}
+    c.fillStyle=bad?"rgba(214,72,60,.14)":"rgba(35,68,110,.08)";
+    c.fillRect(-hw,-hl,s.w*S,s.l*S);
+    c.strokeStyle=bad?"#D6483C":(s.flag?"#C87F14":INK);
+    c.lineWidth=Math.max(1.4,0.05*S);
+    if(s.flag&&!bad)c.setLineDash([7,4]);
+    c.strokeRect(-hw,-hl,s.w*S,s.l*S);c.setLineDash([]);
+    if(s.kind==="perp"){c.strokeStyle=bad?"#D6483C":INK;c.lineWidth=Math.max(2,0.07*S);
+      c.beginPath();c.moveTo(-hw*0.72,-hl+0.35*S);c.lineTo(hw*0.72,-hl+0.35*S);c.stroke();}
+    const cw=(s.w-0.5)*S, cl=(s.l-0.8)*S, r=Math.min(cw*0.3,0.35*S);
+    c.fillStyle="#5A6E88";
+    c.beginPath();
+    c.moveTo(-cw/2+r,-cl/2);c.arcTo(cw/2,-cl/2,cw/2,cl/2,r*1.6);
+    c.arcTo(cw/2,cl/2,-cw/2,cl/2,r);c.arcTo(-cw/2,cl/2,-cw/2,-cl/2,r);
+    c.arcTo(-cw/2,-cl/2,cw/2,-cl/2,r*1.6);c.closePath();c.fill();
+    c.fillStyle="rgba(246,247,244,.85)";
+    c.fillRect(-cw*0.36,-cl*0.24,cw*0.72,cl*0.14);
+    c.fillRect(-cw*0.36,cl*0.16,cw*0.72,cl*0.12);
+    c.restore();
+    /* number + labels */
+    const fs=Math.max(9,Math.min(16,0.36*S));
+    const num=numOf.get(s.id)||"";
+    c.beginPath();c.arc(X(s.cx),Y(s.cy),fs*0.85,0,7);
+    c.fillStyle=bad?"#D6483C":(s.flag?"#F3A73B":"#F6F7F4");
+    c.fill();c.strokeStyle=bad?"#D6483C":INK;c.lineWidth=1.2;c.stroke();
+    label(c,num,X(s.cx),Y(s.cy)+0.5,fs*0.86,(bad||s.flag)?"#fff":INK,1);
+    if(opts.sdims)
+      label(c,s.w.toFixed(2)+"×"+s.l.toFixed(2),X(s.cx),Y(s.cy)+fs*1.55,Math.max(7,0.2*S),"#43608C",0);
+    if(s.apts&&s.apts.length)
+      label(c,s.apts.map(a=>"A"+a).join("·"),X(s.cx),Y(s.cy)+fs*(opts.sdims?2.5:1.55),Math.max(7,0.21*S),"#2F7D57",1);
+    if(sel&&sel.obj===s){
+      const cs=cornersOf(s).map(p=>({x:X(p.x),y:Y(p.y)}));
+      c.strokeStyle="#F3A73B";c.lineWidth=2.4;c.setLineDash([6,4]);
+      c.beginPath();c.moveTo(cs[0].x,cs[0].y);
+      for(let i=1;i<4;i++)c.lineTo(cs[i].x,cs[i].y);
+      c.closePath();c.stroke();c.setLineDash([]);
+      c.fillStyle="#F3A73B";
+      for(const p of cs){c.beginPath();c.arc(p.x,p.y,4.5,0,7);c.fill();}
+    }
+  }
+  /* survey dims */
+  if(opts.dims){
+    dim(c,"29,75",X(0),Y(0),X(0),Y(GH),0.9,S);
+    dim(c,"17,60",X(0),Y(GH),X(GW),Y(GH),0.9,S);
+    dim(c,"6,68",X(0),Y(4.47),X(6.68),Y(4.47),0.5,S);
+    dim(c,"4,33",X(7.19),Y(4.47),X(11.52),Y(4.47),0.5,S);
+    dim(c,"3,43",X(7.60),Y(9.12),X(11.03),Y(9.12),0.45,S);
+    dim(c,"6,57",X(11.03),Y(12.8),X(GW),Y(12.8),0.0,S);
+    dim(c,"4,64",X(4.9),Y(18.55),X(4.9),Y(23.19),0.0,S);
+    dim(c,"6,05",X(GW),Y(23.70),X(GW),Y(GH),-0.55,S);
+  }
+  /* measure */
+  if(measure&&measure.a){
+    const A=measure.a,B=measure.b||measure.a;
+    c.strokeStyle="#C87F14";c.fillStyle="#C87F14";c.lineWidth=2;c.setLineDash([6,4]);
+    c.beginPath();c.moveTo(X(A.x),Y(A.y));c.lineTo(X(B.x),Y(B.y));c.stroke();c.setLineDash([]);
+    for(const p of [A,B]){c.beginPath();c.arc(X(p.x),Y(p.y),4,0,7);c.fill();}
+    if(measure.b){
+      const d=Math.hypot(B.x-A.x,B.y-A.y);
+      label(c,d.toFixed(2)+" m",X((A.x+B.x)/2),Y((A.y+B.y)/2)-12,13,"#C87F14",1);
+    }
+  }
+  /* scale bar */
+  const bx=X(0.3),by=Y(GH)+(printMode?40:26);
+  c.strokeStyle=INK;c.fillStyle=INK;c.lineWidth=2;
+  c.beginPath();c.moveTo(bx,by);c.lineTo(bx+5*S,by);c.stroke();
+  for(let i=0;i<=5;i++){c.beginPath();c.moveTo(bx+i*S,by-4);c.lineTo(bx+i*S,by+4);c.stroke();}
+  label(c,"0",bx,by+12,10,INK,0);label(c,"5 m",bx+5*S,by+12,10,INK,0);
+}
+
+function draw(){
+  computeWarnings();
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,cv.width,cv.height);
+  ctx.fillStyle="#F6F7F4";ctx.fillRect(0,0,cv.width/dpr,cv.height/dpr);
+  drawScene(ctx,vw,false);
+  updateChips();positionPill();
+}
+
+/* ---------------- Capacity & apartments ---------------- */
+function stallOrder(){return state.stalls.slice().sort((a,b)=>a.cy-b.cy||a.cx-b.cx)}
+function updateChips(){
+  const n=state.stalls.length, flags=state.stalls.filter(s=>s.flag).length;
+  const warns=state.stalls.reduce((a,s)=>a+(s.warn&&s.warn.length?1:0),0);
+  document.getElementById("capChip").textContent=`🚗 ${n} · 🏠 ${state.napt}`;
+  const wc=document.getElementById("warnChip");
+  wc.style.display=warns?"flex":"none";wc.textContent="⚠ "+warns;
+  const byT={};for(const s of state.stalls)byT[s.tp]=(byT[s.tp]||0)+1;
+  const cls=Object.keys(byT).map(k=>`${t(k)||k}: ${byT[k]}`).join(" · ")||"—";
+  const shared=state.stalls.filter(s=>(s.apts||[]).length>1).length;
+  document.getElementById("capTxt").innerHTML=T[LANG].cap(n,flags,cls,shared).replace(/\n/g,"<br>");
+  /* apartments summary */
+  const used=new Set();state.stalls.forEach(s=>(s.apts||[]).forEach(a=>used.add(a)));
+  const un=[];for(let i=1;i<=state.napt;i++)if(!used.has(i))un.push(i);
+  const ord=stallOrder(); let lines=[];
+  ord.forEach((s,i)=>{if((s.apts||[]).length)
+    lines.push(`${t("stall")} ${i+1} → ${s.apts.map(a=>t("aptShort")+" "+a).join(" + ")}${s.apts.length>1?"  ("+t("shared")+")":""}`)});
+  const unTxt = un.length? `<span style="color:#FFB4AC">${t("unass")}: ${un.join(", ")}</span>` : "";
+  document.getElementById("aptTxt").innerHTML=[unTxt,...lines].filter(Boolean).join("<br>")||"—";
+}
+function autoAssign(){
+  const ord=stallOrder(); if(!ord.length)return;
+  ord.forEach(s=>s.apts=[]);
+  const N=state.napt;
+  for(let i=0;i<Math.min(N,ord.length);i++)ord[i].apts.push(i+1);
+  if(N>ord.length){
+    const extra=[];for(let i=ord.length;i<N;i++)extra.push(i+1);
+    const byArea=ord.slice().sort((a,b)=>b.w*b.l-a.w*a.l);
+    extra.forEach((apt,k)=>byArea[k%byArea.length].apts.push(apt));
+  }
+  ord.forEach(s=>s.apts.sort((a,b)=>a-b));
+  pushUndo();syncFields();draw();persist();
+}
+
+/* ---------------- Selection ---------------- */
+const pill=document.getElementById("pill");
+function positionPill(){
+  if(!sel){pill.style.display="none";return}
+  const o=sel.obj;
+  const cx=sel.isStruct?o.x+o.w/2:o.cx;
+  const cy=sel.isStruct?o.y:o.cy-(o.l||o.h)/2;
+  const px=vw.ox+cx*vw.S, py=vw.oy+cy*vw.S-58;
+  pill.style.display="flex";
+  const pw=pill.offsetWidth||250;
+  pill.style.left=Math.max(6,Math.min(window.innerWidth-pw-6,px-pw/2))+"px";
+  pill.style.top=Math.max(58,py)+"px";
+  const nm=sel.isStruct?(o.lab?t(o.lab):o.type):
+    (t(o.tp)||o.tp)+" "+o.w.toFixed(2)+"×"+o.l.toFixed(2);
+  document.getElementById("pLbl").textContent=nm;
+}
+function select(obj,isStruct){sel=obj?{obj,isStruct:!!isStruct}:null;syncFields();draw();}
+function buildTypeSelect(){
+  const el=document.getElementById("fType");el.innerHTML="";
+  for(const k of ["small","std","suv","xl","pmr","moto"]){
+    const o=document.createElement("option");o.value=k;
+    o.textContent=`${t(k)} ${TYPES[k].w}×${TYPES[k].l}`;el.appendChild(o);
+  }
+}
+function buildAptChips(){
+  const box=document.getElementById("aptChips");box.innerHTML="";
+  if(!sel||sel.isStruct)return;
+  const s=sel.obj, used=new Map();
+  state.stalls.forEach(o=>{if(o!==s)(o.apts||[]).forEach(a=>used.set(a,o))});
+  for(let i=1;i<=state.napt;i++){
+    const b=document.createElement("button");b.className="aptc";
+    b.textContent="A"+i;
+    const mine=(s.apts||[]).includes(i);
+    if(mine)b.classList.add("on");
+    else if(used.has(i))b.classList.add("tk");
+    b.onclick=()=>{
+      s.apts=s.apts||[];
+      if(mine){s.apts=s.apts.filter(a=>a!==i);}
+      else{
+        const other=used.get(i);
+        if(other)other.apts=other.apts.filter(a=>a!==i);
+        s.apts.push(i);s.apts.sort((a,b)=>a-b);
+      }
+      pushUndo();syncFields();draw();persist();
+    };
+    box.appendChild(b);
+  }
+}
+function syncFields(){
+  const f=document.getElementById("selForm"),n=document.getElementById("selNone");
+  if(!sel){f.style.display="none";n.style.display="block";return}
+  f.style.display="block";n.style.display="none";
+  const o=sel.obj;
+  if(sel.isStruct){
+    fX.value=o.x.toFixed(2);fY.value=o.y.toFixed(2);
+    fW.value=o.w.toFixed(2);fL.value=o.h.toFixed(2);fR.value=0;
+    flagRow.style.display="none";aptBox.style.display="none";
+    fType.style.display="none";
+  }else{
+    fType.style.display="block";fType.value=o.tp||"std";
+    fX.value=(o.cx-o.w/2).toFixed(2);fY.value=(o.cy-o.l/2).toFixed(2);
+    fW.value=o.w.toFixed(2);fL.value=o.l.toFixed(2);fR.value=o.rot||0;
+    flagRow.style.display="flex";fFlag.checked=!!o.flag;
+    aptBox.style.display="block";buildAptChips();
+  }
+}
+["fX","fY","fW","fL","fR"].forEach(id=>{
+  document.getElementById(id).addEventListener("change",()=>{
+    if(!sel)return;const o=sel.obj;
+    const x=parseFloat(fX.value)||0,y=parseFloat(fY.value)||0;
+    const w=Math.max(0.2,parseFloat(fW.value)||1),l=Math.max(0.2,parseFloat(fL.value)||1);
+    if(sel.isStruct){o.x=x;o.y=y;o.w=w;o.h=l;}
+    else{o.w=w;o.l=l;o.rot=((parseFloat(fR.value)||0)%360+360)%360;o.cx=x+w/2;o.cy=y+l/2;}
+    pushUndo();draw();persist();
+  });
+});
+document.getElementById("fType").addEventListener("change",e=>{
+  if(!sel||sel.isStruct)return;const d=TYPES[e.target.value];if(!d)return;
+  sel.obj.tp=e.target.value;sel.obj.w=d.w;sel.obj.l=d.l;
+  pushUndo();syncFields();draw();persist();
+});
+document.getElementById("fFlag").addEventListener("change",e=>{
+  if(sel&&!sel.isStruct){sel.obj.flag=e.target.checked;pushUndo();draw();persist();}
+});
+document.getElementById("pRotM").onclick=()=>rotSel(-15);
+document.getElementById("pRotP").onclick=()=>rotSel(15);
+document.getElementById("pRot90").onclick=()=>rotSel(90);
+function rotSel(d){if(!sel||sel.isStruct)return;
+  sel.obj.rot=(((sel.obj.rot||0)+d)%360+360)%360;pushUndo();syncFields();draw();persist();}
+document.getElementById("pApt").onclick=()=>{panel.classList.add("open");scrim.classList.add("on");};
+document.getElementById("pDup").onclick=()=>{
+  if(!sel||sel.isStruct)return;
+  const c=JSON.parse(JSON.stringify(sel.obj));c.id=uid();c.cx+=0.6;c.cy+=0.6;c.apts=[];
+  state.stalls.push(c);select(c);pushUndo();persist();
+};
+document.getElementById("pDel").onclick=()=>{
+  if(!sel)return;
+  if(sel.isStruct)state.structure=state.structure.filter(s=>s!==sel.obj);
+  else state.stalls=state.stalls.filter(s=>s!==sel.obj);
+  select(null);pushUndo();persist();
+};
+
+/* ---------------- Pointer interactions ---------------- */
+const pointers=new Map();
+let drag=null,panStart=null,pinch0=null,moved=false;
+function evtWorld(e){const r=cv.getBoundingClientRect();
+  return {x:(e.clientX-r.left-vw.ox)/vw.S,y:(e.clientY-r.top-vw.oy)/vw.S}}
+function hitTest(p){
+  for(let i=state.stalls.length-1;i>=0;i--)
+    if(pointInOBB(p,state.stalls[i]))return {obj:state.stalls[i],isStruct:false};
+  if(opts.struct){
+    for(let i=state.structure.length-1;i>=0;i--){
+      const s=state.structure[i];
+      if(p.x>=s.x&&p.x<=s.x+s.w&&p.y>=s.y&&p.y<=s.y+s.h)return {obj:s,isStruct:true};
+    }
+  }
+  return null;
+}
+cv.addEventListener("pointerdown",e=>{
+  cv.setPointerCapture(e.pointerId);
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  moved=false;
+  if(pointers.size===2){
+    const ps=[...pointers.values()];
+    pinch0={d:Math.hypot(ps[0].x-ps[1].x,ps[0].y-ps[1].y),
+      mx:(ps[0].x+ps[1].x)/2,my:(ps[0].y+ps[1].y)/2,S:vw.S,ox:vw.ox,oy:vw.oy};
+    drag=null;panStart=null;return;
+  }
+  const p=evtWorld(e);
+  if(tool==="measure"){
+    if(!measure||measure.b)measure={a:{x:snapV(p.x),y:snapV(p.y)},b:null};
+    else measure.b={x:snapV(p.x),y:snapV(p.y)};
+    draw();return;
+  }
+  const h=hitTest(p);
+  if(h)drag={h,gx:p.x-(h.isStruct?h.obj.x:h.obj.cx),gy:p.y-(h.isStruct?h.obj.y:h.obj.cy)};
+  else panStart={x:e.clientX,y:e.clientY,ox:vw.ox,oy:vw.oy};
+});
+cv.addEventListener("pointermove",e=>{
+  if(!pointers.has(e.pointerId))return;
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pointers.size===2&&pinch0){
+    const ps=[...pointers.values()];
+    const d=Math.hypot(ps[0].x-ps[1].x,ps[0].y-ps[1].y);
+    const mx=(ps[0].x+ps[1].x)/2,my=(ps[0].y+ps[1].y)/2;
+    const k=Math.max(0.25,Math.min(6,d/pinch0.d));
+    const S2=Math.max(7,Math.min(220,pinch0.S*k));
+    const r=cv.getBoundingClientRect();
+    const wx=(pinch0.mx-r.left-pinch0.ox)/pinch0.S,wy=(pinch0.my-r.top-pinch0.oy)/pinch0.S;
+    vw.S=S2;vw.ox=mx-r.left-wx*S2;vw.oy=my-r.top-wy*S2;
+    draw();return;
+  }
+  const p=evtWorld(e);
+  if(drag){
+    moved=true;
+    if(drag.h.isStruct){drag.h.obj.x=snapV(p.x-drag.gx);drag.h.obj.y=snapV(p.y-drag.gy);}
+    else{drag.h.obj.cx=snapV(p.x-drag.gx);drag.h.obj.cy=snapV(p.y-drag.gy);}
+    draw();
+  }else if(panStart){
+    moved=true;
+    vw.ox=panStart.ox+(e.clientX-panStart.x);
+    vw.oy=panStart.oy+(e.clientY-panStart.y);
+    draw();
+  }
+});
+function endPointer(e){
+  pointers.delete(e.pointerId);
+  if(pointers.size<2)pinch0=null;
+  if(drag){
+    if(!moved)select(drag.h.obj,drag.h.isStruct);
+    else{select(drag.h.obj,drag.h.isStruct);pushUndo();persist();}
+    drag=null;
+  }else if(panStart){
+    if(!moved&&tool==="sel")select(null);
+    panStart=null;
+  }
+}
+cv.addEventListener("pointerup",endPointer);
+cv.addEventListener("pointercancel",endPointer);
+cv.addEventListener("wheel",e=>{
+  e.preventDefault();
+  const r=cv.getBoundingClientRect();
+  const k=e.deltaY<0?1.12:0.9;
+  const S2=Math.max(7,Math.min(220,vw.S*k));
+  const wx=(e.clientX-r.left-vw.ox)/vw.S,wy=(e.clientY-r.top-vw.oy)/vw.S;
+  vw.ox=e.clientX-r.left-wx*S2;vw.oy=e.clientY-r.top-wy*S2;vw.S=S2;draw();
+},{passive:false});
+cv.addEventListener("dblclick",()=>{if(sel&&!sel.isStruct)rotSel(90)});
+window.addEventListener("keydown",e=>{
+  if(e.target.tagName==="INPUT"||e.target.tagName==="SELECT")return;
+  if(!sel)return;
+  const o=sel.obj,st=e.shiftKey?0.25:0.05;
+  if(e.key==="Delete"||e.key==="Backspace")document.getElementById("pDel").click();
+  else if(e.key==="r"||e.key==="R")rotSel(90);
+  else if(e.key.startsWith("Arrow")){
+    e.preventDefault();
+    const dx=e.key==="ArrowLeft"?-st:e.key==="ArrowRight"?st:0;
+    const dy=e.key==="ArrowUp"?-st:e.key==="ArrowDown"?st:0;
+    if(sel.isStruct){o.x+=dx;o.y+=dy;}else{o.cx+=dx;o.cy+=dy;}
+    pushUndo();draw();persist();
+  }
+});
+
+/* ---------------- Undo / redo ---------------- */
+function snap(){return JSON.stringify({stalls:state.stalls,structure:state.structure,napt:state.napt})}
+function pushUndo(){undoStack.push(snap());if(undoStack.length>60)undoStack.shift();redoStack=[];}
+function restore(js){const o=JSON.parse(js);
+  state.stalls=o.stalls||[];state.structure=o.structure||defaultStructure();
+  state.napt=o.napt||16;document.getElementById("nApt").value=state.napt;
+  select(null);draw();persist();}
+document.getElementById("undoB").onclick=()=>{
+  if(undoStack.length<2)return;
+  redoStack.push(undoStack.pop());restore(undoStack[undoStack.length-1]);
+};
+document.getElementById("redoB").onclick=()=>{
+  if(!redoStack.length)return;
+  const s=redoStack.pop();undoStack.push(s);restore(s);
+};
+
+/* ---------------- Persistence ---------------- */
+const KEY="dtr-garage-plan-v2";
+let saveT=null;
+function persist(){
+  clearTimeout(saveT);
+  saveT=setTimeout(async()=>{
+    try{if(window.storage)await window.storage.set(KEY,snap());}catch(err){}
+  },700);
+}
+async function loadSaved(){
+  try{
+    if(!window.storage)return false;
+    const r=await window.storage.get(KEY);
+    if(r&&r.value){const o=JSON.parse(r.value);
+      if(o.stalls&&o.structure){state.stalls=o.stalls;state.structure=o.structure;
+        state.napt=o.napt||16;return true}}
+  }catch(err){}
+  return false;
+}
+
+/* ---------------- Toolbar ---------------- */
+function setTool(k){
+  tool=k;
+  toolSel.classList.toggle("on",k==="sel");
+  toolMeas.classList.toggle("on",k==="measure");
+  if(k!=="measure")measure=null;
+  draw();
+}
+toolSel.onclick=()=>setTool("sel");
+toolMeas.onclick=()=>setTool(tool==="measure"?"sel":"measure");
+toolAdd.onclick=()=>{sheet.classList.add("open");scrim.classList.add("on");};
+toolPng.onclick=()=>exportPNG();
+zin.onclick=()=>{vw.S=Math.min(220,vw.S*1.25);draw();};
+zout.onclick=()=>{vw.S=Math.max(7,vw.S*0.8);draw();};
+zfit.onclick=fit;
+
+const panel=document.getElementById("panel"),scrim=document.getElementById("scrim"),
+      sheet=document.getElementById("sheet");
+panelBtn.onclick=()=>{panel.classList.add("open");scrim.classList.add("on");};
+panelX.onclick=closeOverlays;
+scrim.onclick=closeOverlays;
+function closeOverlays(){panel.classList.remove("open");sheet.classList.remove("open");scrim.classList.remove("on");}
+
+[["oGrid","grid"],["oDims","dims"],["oSDims","sdims"],["oFlow","flow"],["oSafe","safe"],
+ ["oClear","clear"],["oSnap","snap"],["oStruct","struct"]]
+.forEach(([id,k])=>{document.getElementById(id).addEventListener("change",e=>{opts[k]=e.target.checked?1:0;draw();});});
+
+document.getElementById("nApt").addEventListener("change",e=>{
+  state.napt=Math.max(1,Math.min(60,parseInt(e.target.value)||16));
+  e.target.value=state.napt;
+  for(const s of state.stalls)s.apts=(s.apts||[]).filter(a=>a<=state.napt);
+  pushUndo();syncFields();draw();persist();
+});
+document.getElementById("autoApt").onclick=autoAssign;
+
+document.getElementById("presetOpt").onclick=()=>{state.stalls=presetOpt();select(null);pushUndo();persist();closeOverlays();fit();};
+document.getElementById("presetSafe").onclick=()=>{state.stalls=presetSafe();select(null);pushUndo();persist();closeOverlays();fit();};
+document.getElementById("presetClear").onclick=()=>{
+  if(confirm(t("confirmClear"))){state.stalls=[];select(null);pushUndo();persist();draw();}
+};
+
+/* add sheet */
+function buildAddSheet(){
+  const sb=document.getElementById("stallBtns"),ob=document.getElementById("obsBtns");
+  sb.innerHTML="";ob.innerHTML="";
+  [["small"],["std"],["suv"],["xl"],["pmr"],["moto"]].forEach(([k])=>{
+    const d=TYPES[k],b=document.createElement("button");
+    b.className="abtn";
+    b.innerHTML=`<b>${t(k)}</b><span>${d.w.toFixed(2)} × ${d.l.toFixed(2)} m</span>`;
+    b.onclick=()=>addStall(k);sb.appendChild(b);
+  });
+  [["col"],["wallb"],["noz"]].forEach(([k])=>{
+    const d=TYPES[k],b=document.createElement("button");
+    b.className="abtn";
+    b.innerHTML=`<b>${t(k)}</b><span>${d.w.toFixed(2)} × ${d.l.toFixed(2)} m</span>`;
+    b.onclick=()=>addObstacle(k);ob.appendChild(b);
+  });
+}
+function viewCenter(){
+  const r=cv.getBoundingClientRect();
+  return {x:(r.width/2-vw.ox)/vw.S,y:(r.height/2-vw.oy)/vw.S};
+}
+function addStall(k){
+  const d=TYPES[k],c=viewCenter();
+  const s=stall(snapV(c.x),snapV(c.y),d.w,d.l,0,k,d.kind,0);
+  state.stalls.push(s);select(s);pushUndo();persist();closeOverlays();
+}
+function addObstacle(k){
+  const d=TYPES[k],c=viewCenter();
+  const o={id:uid(),type:d.type,x:snapV(c.x-d.w/2),y:snapV(c.y-d.l/2),w:d.w,h:d.l};
+  state.structure.push(o);
+  opts.struct=1;document.getElementById("oStruct").checked=true;
+  select(o,true);pushUndo();persist();closeOverlays();
+}
+
+/* ---------------- Export ---------------- */
+function exportPNG(){
+  const px=2200,headH=150,pad=60;
+  const ord=stallOrder();
+  const rowH=44,tblH=rowH*(ord.length+2)+70;
+  const S=(px-pad*2)/GW;
+  const planH=GH*S+pad*2;
+  const oc=document.createElement("canvas");oc.width=px;oc.height=Math.round(headH+planH+tblH);
+  const c=oc.getContext("2d");
+  c.fillStyle="#F6F7F4";c.fillRect(0,0,oc.width,oc.height);
+  /* cartouche */
+  c.fillStyle="#141F2C";c.fillRect(0,0,px,headH);
+  c.fillStyle="#F3A73B";c.fillRect(0,headH-6,px,6);
+  c.fillStyle="#EAF0F6";c.font="700 42px "+MONO;
+  c.fillText(t("planTitle"),pad,62);
+  c.fillStyle="#9FB0C2";c.font="25px "+MONO;
+  const d=new Date();
+  c.fillText(`${t("planSub")}   ·   🚗 ${state.stalls.length}   ·   ${d.toLocaleDateString(LANG==="fr"?"fr-FR":"en-GB")}`,pad,110);
+  drawScene(c,{S:S,ox:pad,oy:headH+pad},true);
+  /* marking table */
+  let ty=headH+planH+30;
+  c.fillStyle="#23446E";c.font="700 28px "+MONO;
+  const cols=[pad, pad+120, pad+520, pad+950, pad+1200, pad+1450];
+  const heads=[t("thN"),t("thT"),t("thD"),t("thX"),t("thY"),t("thA")];
+  heads.forEach((h,i)=>c.fillText(h,cols[i],ty));
+  ty+=14;
+  c.strokeStyle="#23446E";c.lineWidth=2;
+  c.beginPath();c.moveTo(pad,ty);c.lineTo(px-pad,ty);c.stroke();
+  c.font="26px "+MONO;
+  ord.forEach((s,i)=>{
+    ty+=rowH;
+    const csx=cornersOf(s);
+    const minx=Math.min(...csx.map(p=>p.x)),miny=Math.min(...csx.map(p=>p.y));
+    c.fillStyle=s.flag?"#C87F14":"#23446E";
+    c.fillText(String(i+1),cols[0],ty);
+    c.fillText((t(s.tp)||s.tp)+(s.flag?" ⚠":""),cols[1],ty);
+    c.fillText(s.w.toFixed(2)+" × "+s.l.toFixed(2),cols[2],ty);
+    c.fillText(minx.toFixed(2),cols[3],ty);
+    c.fillText(miny.toFixed(2),cols[4],ty);
+    c.fillStyle="#2F7D57";
+    c.fillText((s.apts||[]).map(a=>t("aptShort")+" "+a).join(" + ")||"—",cols[5],ty);
+    c.strokeStyle="#D5DDD4";c.lineWidth=1;
+    c.beginPath();c.moveTo(pad,ty+12);c.lineTo(px-pad,ty+12);c.stroke();
+  });
+  ty+=rowH;
+  c.fillStyle="#7288A8";c.font="22px "+MONO;
+  c.fillText(t("tblNote"),pad,ty);
+  const a=document.createElement("a");
+  a.download="plan-parking-garage.png";
+  a.href=oc.toDataURL("image/png");
+  a.click();closeOverlays();
+}
+document.getElementById("expPng").onclick=exportPNG;
+document.getElementById("expJson").onclick=()=>{
+  const a=document.createElement("a");
+  a.download="plan-parking-garage.json";
+  a.href=URL.createObjectURL(new Blob([snap()],{type:"application/json"}));
+  a.click();closeOverlays();
+};
+document.getElementById("impJson").onclick=()=>document.getElementById("fileIn").click();
+document.getElementById("fileIn").addEventListener("change",e=>{
+  const f=e.target.files[0];if(!f)return;
+  const rd=new FileReader();
+  rd.onload=()=>{try{restore(rd.result);pushUndo();fit();}catch(err){alert("JSON invalide")}};
+  rd.readAsText(f);e.target.value="";closeOverlays();
+});
+
+/* ---------------- Language ---------------- */
+function applyLang(){
+  document.querySelectorAll("[data-i]").forEach(el=>{
+    const k=el.dataset.i;
+    if(T[LANG][k]!==undefined&&typeof T[LANG][k]==="string")el.innerHTML=T[LANG][k];
+  });
+  document.getElementById("langBtn").textContent=LANG==="fr"?"EN":"FR";
+  buildAddSheet();buildTypeSelect();syncFields();updateChips();draw();
+}
+document.getElementById("langBtn").onclick=()=>{LANG=LANG==="fr"?"en":"fr";applyLang();};
+
+/* ---------------- Boot ---------------- */
+(async function(){
+  sizeCanvas();
+  await loadSaved();
+  document.getElementById("nApt").value=state.napt;
+  undoStack=[snap()];
+  applyLang();
+  fit();
+})();
+</script>
+</body>
+</html>
