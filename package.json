@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "preview": "next build && next start",
+    "build": "NEXT_DIST_DIR=.next-build next build",
+    "start": "NEXT_DIST_DIR=.next-build next start",
+    "preview": "NEXT_DIST_DIR=.next-build next build && NEXT_DIST_DIR=.next-build next start",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

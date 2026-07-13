@@ -12,8 +12,10 @@ npm run preview    # production build + serve → http://localhost:3000 (most st
 npm test           # engine unit tests (vitest)
 ```
 
-Requires Node ≥ 20. If the dev server ever serves an unstyled page after many
-hot reloads, stop it and `rm -rf .next`, then start again — or use `npm run preview`.
+Requires Node ≥ 20. Builds write to `.next-build` (separate from the dev
+server's `.next`), so `npm run build` / `npm run preview` are safe to run
+while `npm run dev` is serving. If the dev server ever misbehaves after many
+hot reloads, stop it, `rm -rf .next`, and start it again.
 
 ## What it does
 
